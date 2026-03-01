@@ -1,0 +1,7 @@
+{
+  "name": "todo-nequi",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular-standalone"
+}
