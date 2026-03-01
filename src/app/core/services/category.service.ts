@@ -28,4 +28,8 @@ export class CategoryService {
     this.storage.updateCategory({ ...category, name: name.trim(), color });
   }
 
+  deleteCategory(id: string): void {
+    this.storage.deleteCategory(id);
+  }
+
 }

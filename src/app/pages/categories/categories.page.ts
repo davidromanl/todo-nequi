@@ -34,7 +34,20 @@ export class CategoriesPage implements OnInit {
     await this.openCategoryDialog(cat);
   }
 
-  deleteCategory(cat: Category) {
+  async deleteCategory(cat: Category): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: 'Eliminar categoría',
+      message: `¿Eliminar "${cat.name}"? Las tareas asociadas perderán esta categoría.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => this.categoryService.deleteCategory(cat.id),
+        },
+      ],
+    });
+    await alert.present();
   }
 
 
