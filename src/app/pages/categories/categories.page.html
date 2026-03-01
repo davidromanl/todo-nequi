@@ -1,10 +1,39 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>categories</ion-title>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tasks"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Categorías</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addCategory()">
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
+
+  <ion-list>
+    <ion-item-sliding *ngFor="let cat of categories$ | async; trackBy: trackById" #slidingItem>
+
+      <ion-item>
+        <div slot="start" class="color-dot" [style.background]="cat.color"></div>
+        <ion-label>{{ cat.name }}</ion-label>
+        <ion-button fill="clear" slot="end" (click)="editCategory(cat); slidingItem.close()">
+          <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="deleteCategory(cat); slidingItem.close()">
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+
+    </ion-item-sliding>
+  </ion-list>
+
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">categories</ion-title>

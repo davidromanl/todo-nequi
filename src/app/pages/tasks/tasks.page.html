@@ -1,6 +1,14 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>tasks</ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>Mis Tareas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/categories">
+        <ion-icon name="pricetags-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="addTask()">
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
