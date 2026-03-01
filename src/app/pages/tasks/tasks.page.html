@@ -13,9 +13,95 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">tasks</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  <ng-container *ngIf="enableTaskStats$ | async">
+    <ion-card class="stats-card">
+      <ion-card-content>
+        <div class="stats-row">
+          <div class="stat">
+            <span class="stat-value">{{ stats.total }}</span>
+            <span class="stat-label">Total</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value text-success">{{ stats.completed }}</span>
+            <span class="stat-label">Completadas</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value text-warning">{{ stats.pending }}</span>
+            <span class="stat-label">Pendientes</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <ng-container *ngIf="enableCategories$ | async">
+    <div class="filter-scroll">
+      <ion-chip [class.active-chip]="(selectedFilter$ | async) === null" (click)="setFilter(null)">
+        Todas
+      </ion-chip>
+      <ion-chip *ngFor="let cat of categories$ | async; trackBy: trackByCatId"
+        [class.active-chip]="(selectedFilter$ | async) === cat.id" [style.--background]="cat.color + '33'"
+        [style.--color]="cat.color" (click)="setFilter(cat.id)">
+        <ion-icon name="ellipse" [style.color]="cat.color"></ion-icon>
+        {{ cat.name }}
+      </ion-chip>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="enableCategories$ | async">
+    <div class="filter-scroll">
+      <ion-chip [class.active-chip]="(selectedFilter$ | async) === null" (click)="setFilter(null)">
+        Todas
+      </ion-chip>
+      <ion-chip *ngFor="let cat of categories$ | async; trackBy: trackByCatId"
+        [class.active-chip]="(selectedFilter$ | async) === cat.id" [style.--background]="cat.color + '33'"
+        [style.--color]="cat.color" (click)="setFilter(cat.id)">
+        <ion-icon name="ellipse" [style.color]="cat.color"></ion-icon>
+        {{ cat.name }}
+      </ion-chip>
+    </div>
+  </ng-container>
+
+  <ion-list>
+    <ion-item-sliding *ngFor="let task of tasks$ | async; trackBy: trackById" #slidingItem>
+
+      <ion-item [class.completed-task]="task.completed" detail="false">
+        <ion-checkbox slot="start" [checked]="task.completed" (ionChange)="toggleTask(task)">
+        </ion-checkbox>
+        <ion-label>
+          <h2 [class.strikethrough]="task.completed">{{ task.title }}</h2>
+          <p *ngIf="task.description">{{ task.description }}</p>
+          <ion-badge *ngIf="getCategoryForTask(task) as cat" [style.background]="cat.color">
+            {{ cat.name }}
+          </ion-badge>
+        </ion-label>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="deleteTask(task); slidingItem.close()">
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+
+    </ion-item-sliding>
+  </ion-list>
+
+  <div class="empty-state" *ngIf="(tasks$ | async)?.length === 0">
+    <ion-icon name="checkmark-circle-outline"></ion-icon>
+    <p>No hay tareas. ¡Agrega una!</p>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="addTask()" color="primary">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
 </ion-content>

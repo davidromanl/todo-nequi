@@ -14,6 +14,14 @@ export class CategoryService {
     return this.storage.categories$;
   }
 
+  getCategories(): Category[] {
+    return this.storage.getCategories();
+  }
+
+  getCategoryById(id: string): Category | undefined {
+    return this.storage.getCategories().find(c => c.id === id);
+  }
+
   addCategory(name: string, color: string): void {
     const category: Category = {
       id: uuid(),
@@ -31,5 +39,4 @@ export class CategoryService {
   deleteCategory(id: string): void {
     this.storage.deleteCategory(id);
   }
-
 }
