@@ -22,18 +22,19 @@ export class CategoryService {
     return this.storage.getCategories().find(c => c.id === id);
   }
 
-  addCategory(name: string, color: string): void {
+  addCategory(name: string, color: string, icon?: string): void {
     const category: Category = {
       id: uuid(),
       name: name.trim(),
       color,
+      icon,
       createdAt: Date.now(),
     };
     this.storage.addCategory(category);
   }
 
-  updateCategory(category: Category, name: string, color: string): void {
-    this.storage.updateCategory({ ...category, name: name.trim(), color });
+  updateCategory(category: Category, name: string, color: string, icon?: string): void {
+    this.storage.updateCategory({ ...category, name: name.trim(), color, icon });
   }
 
   deleteCategory(id: string): void {

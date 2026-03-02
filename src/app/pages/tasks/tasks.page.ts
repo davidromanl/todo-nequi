@@ -1,27 +1,57 @@
-import { Component, OnInit, OnDestroy, TrackByFunction } from '@angular/core';
+import {
+  Component, OnInit, OnDestroy,
+  ChangeDetectionStrategy, TrackByFunction,
+  ViewChild
+} from '@angular/core';
+import { Observable, Subject, takeUntil, combineLatest, map, BehaviorSubject } from 'rxjs';
+import { TaskService } from '../../core/services/task.service';
+import { CategoryService } from '../../core/services/category.service';
+import { FirebaseService } from '../../core/services/firebase.service';
+import { Category } from '../../models/category';
+import { Task } from '../../models/task';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonButton, IonIcon, IonCard, IonCardContent, IonChip, IonBadge, IonItemSliding, IonItem, IonCheckbox, IonItemOptions, IonItemOption, IonList, IonLabel, IonFab, IonFabButton } from '@ionic/angular/standalone';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  IonModal, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
+  IonIcon, IonList, IonItemSliding, IonItem, IonCheckbox, IonLabel, IonBadge,
+  IonChip, IonFab, IonFabButton, IonCard, IonCardContent, IonItemOptions,
+  IonItemOption, IonInput, IonTextarea, IonSelect, IonSelectOption
+} from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { Task } from 'src/app/models/task';
-import { Category } from 'src/app/models/category';
-import { AlertController } from '@ionic/angular';
-import { TaskService } from 'src/app/core/services/task.service';
-import { CategoryService } from 'src/app/core/services/category.service';
-import { FirebaseService } from 'src/app/core/services/firebase.service';
 
 @Component({
   selector: 'app-tasks',
   templateUrl: './tasks.page.html',
   styleUrls: ['./tasks.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonButtons, IonButtons, IonButton, IonIcon, RouterLink, IonCard, IonCardContent, IonChip, IonBadge, IonItemSliding, IonItem, IonCheckbox, IonItemOptions, IonItemOption, IonList, IonLabel, IonFab, IonFabButton]
+  imports: [
+    IonModal, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
+    IonIcon, IonList, IonItemSliding, IonItem, IonCheckbox, IonLabel, IonBadge,
+    IonChip, IonFab, IonFabButton, IonCard, IonCardContent, IonItemOptions,
+    IonItemOption, IonInput, IonTextarea, IonSelect, IonSelectOption,
+    CommonModule, FormsModule, ReactiveFormsModule, RouterLink
+  ]
 })
 export class TasksPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private filterSubject = new BehaviorSubject<string | null>(null);
 
+  // ── Modal references ───────────────────────────────
+  @ViewChild('taskModal') taskModal!: IonModal;
+  @ViewChild('deleteModal') deleteModal!: IonModal;
+
+  // ── Modal state ────────────────────────────────────
+  modalTitle = 'Nueva Tarea';
+  editingTask: Task | null = null;
+  taskToDelete: Task | null = null;
+
+  // Form fields (two-way bound in the template)
+  formTitle = '';
+  formDescription = '';
+  formCategoryId: string | null = null;
+
+  // ── Streams ────────────────────────────────────────
   tasks$!: Observable<Task[]>;
   categories$!: Observable<Category[]>;
   enableCategories$!: Observable<boolean>;
@@ -29,14 +59,30 @@ export class TasksPage implements OnInit, OnDestroy {
   selectedFilter$ = this.filterSubject.asObservable();
 
   stats = { total: 0, completed: 0, pending: 0 };
+
   constructor(
     public taskService: TaskService,
     public categoryService: CategoryService,
     private firebaseService: FirebaseService,
-    private alertCtrl: AlertController,
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.categories$ = this.categoryService.getCategories$();
+    this.enableCategories$ = this.firebaseService.flags$.pipe(map(f => f.enableCategories));
+    this.enableTaskStats$ = this.firebaseService.flags$.pipe(map(f => f.enableTaskStats));
+
+    this.tasks$ = combineLatest([
+      this.taskService.getTasks$(),
+      this.filterSubject,
+    ]).pipe(
+      map(([tasks, filter]) =>
+        filter ? tasks.filter(t => t.categoryId === filter) : tasks
+      )
+    );
+
+    this.taskService.getTasks$().pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.stats = this.taskService.getStats();
+    });
   }
 
   ngOnDestroy(): void {
@@ -44,63 +90,78 @@ export class TasksPage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // ── TrackBy (performance) ──────────────────────────
   trackById: TrackByFunction<Task> = (_, task) => task.id;
   trackByCatId: TrackByFunction<Category> = (_, cat) => cat.id;
 
-
-  async addTask() {
-    const categories = this.categoryService.getCategories();
-    const catInputs = categories.map(c => ({
-      type: 'radio' as const,
-      label: c.name,
-      value: c.id,
-    }));
-
-    const alert = await this.alertCtrl.create({
-      header: 'Nueva Tarea',
-      inputs: [
-        { name: 'title', type: 'text', placeholder: 'Título de la tarea' },
-        { name: 'description', type: 'textarea', placeholder: 'Descripción (opcional)' },
-        ...catInputs,
-      ],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Agregar',
-          handler: data => {
-            if (data.title?.trim()) {
-              const categoryId = catInputs.find(i => i.value === data[0])?.value;
-              this.taskService.addTask(data.title, data.description, categoryId);
-            }
-          },
-        },
-      ],
-    });
-    await alert.present();
+  // ── Filter ─────────────────────────────────────────
+  setFilter(categoryId: string | null): void {
+    this.filterSubject.next(categoryId);
   }
 
+  // ── Open modal: Agregar ────────────────────────────
+  openAddModal(): void {
+    this.editingTask = null;
+    this.modalTitle = 'Nueva Tarea';
+    this.formTitle = '';
+    this.formDescription = '';
+    this.formCategoryId = null;
+    this.taskModal.present();
+  }
+
+  // ── Open modal: Editar ─────────────────────────────
+  openEditModal(task: Task): void {
+    this.editingTask = task;
+    this.modalTitle = 'Editar Tarea';
+    this.formTitle = task.title;
+    this.formDescription = task.description ?? '';
+    this.formCategoryId = task.categoryId ?? null;
+    this.taskModal.present();
+  }
+
+  // ── Guardar (crear o actualizar) ───────────────────
+  saveTask(): void {
+    if (!this.formTitle.trim()) return;
+
+    if (this.editingTask) {
+      this.taskService.updateTask(
+        this.editingTask,
+        this.formTitle,
+        this.formDescription || undefined,
+        this.formCategoryId ?? undefined,
+      );
+    } else {
+      this.taskService.addTask(
+        this.formTitle,
+        this.formDescription || undefined,
+        this.formCategoryId ?? undefined,
+      );
+    }
+
+    this.taskModal.dismiss();
+  }
+
+  // ── Toggle ─────────────────────────────────────────
   toggleTask(task: Task): void {
     this.taskService.toggleComplete(task);
   }
 
-  setFilter(categoryId: string | null) {
-    this.filterSubject.next(categoryId);
+  // ── Open modal: Confirmar eliminación ─────────────
+  openDeleteModal(task: Task): void {
+    this.taskToDelete = task;
+    this.deleteModal.present();
   }
 
-  async deleteTask(task: Task): Promise<void> {
-    const alert = await this.alertCtrl.create({
-      header: 'Eliminar tarea',
-      message: `¿Eliminar "${task.title}"?`,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        { text: 'Eliminar', role: 'destructive', handler: () => this.taskService.deleteTask(task.id) },
-      ],
-    });
-    await alert.present();
+  confirmDelete(): void {
+    if (this.taskToDelete) {
+      this.taskService.deleteTask(this.taskToDelete.id);
+      this.taskToDelete = null;
+    }
+    this.deleteModal.dismiss();
   }
 
+  // ── Helper ─────────────────────────────────────────
   getCategoryForTask(task: Task): Category | undefined {
     return task.categoryId ? this.categoryService.getCategoryById(task.categoryId) : undefined;
   }
-
 }

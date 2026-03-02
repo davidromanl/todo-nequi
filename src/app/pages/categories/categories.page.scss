@@ -1,0 +1,109 @@
+/* ── Empty state ─────────────────────────────── */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 24px;
+    color: var(--ion-color-medium);
+
+    ion-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    p {
+        font-size: 15px;
+        margin: 0;
+    }
+}
+
+/* ── Lista ───────────────────────────────────── */
+.category-list {
+    padding: 8px 0;
+    background: transparent;
+}
+
+/* ── Item ────────────────────────────────────── */
+.category-item {
+    --padding-start: 16px;
+    --padding-end: 12px;
+    --inner-padding-end: 0;
+    --min-height: 56px;
+    --background: var(--ion-card-background, var(--ion-item-background, #fff));
+    margin: 4px 16px;
+    color: #FFF;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:active {
+        transform: scale(0.98);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+/* ── Color badge ─────────────────────────────── */
+.color-badge {
+    --size: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 10px;
+    background: var(--cat-color);
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--cat-color) 40%, transparent);
+    transition: box-shadow 0.2s ease;
+
+    .badge-icon {
+        color: #fff;
+        font-size: 18px;
+    }
+
+    .badge-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.85);
+    }
+}
+
+/* ── Label ───────────────────────────────────── */
+.category-label {
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    margin-left: 14px;
+}
+
+/* ── Chevron ─────────────────────────────────── */
+.chevron-hint {
+    font-size: 16px;
+    color: var(--ion-color-medium-tint);
+    margin-right: 4px;
+    opacity: 0.5;
+}
+
+/* ── Slide option ────────────────────────────── */
+.option-delete {
+    --ion-color-danger: #ff3b30;
+    font-size: 12px;
+    font-weight: 500;
+
+    ion-icon {
+        font-size: 22px;
+        margin-bottom: 2px;
+    }
+}
+
+/* ── Dark mode tweaks ────────────────────────── */
+@media (prefers-color-scheme: dark) {
+    .category-item {
+        --background: var(--ion-card-background, #1c1c1e);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+}
