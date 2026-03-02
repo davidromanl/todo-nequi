@@ -1,4 +1,3 @@
-/* ── Empty state ─────────────────────────────── */
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -19,13 +18,26 @@
     }
 }
 
-/* ── Lista ───────────────────────────────────── */
 .category-list {
     padding: 8px 0;
     background: transparent;
 }
 
-/* ── Item ────────────────────────────────────── */
+.icon-picker-container {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.icon-button {
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+}
+
 .category-item {
     --padding-start: 16px;
     --padding-end: 12px;
@@ -44,7 +56,6 @@
     }
 }
 
-/* ── Color badge ─────────────────────────────── */
 .color-badge {
     --size: 36px;
 
@@ -72,7 +83,6 @@
     }
 }
 
-/* ── Label ───────────────────────────────────── */
 .category-label {
     font-weight: 600;
     font-size: 15px;
@@ -80,7 +90,6 @@
     margin-left: 14px;
 }
 
-/* ── Chevron ─────────────────────────────────── */
 .chevron-hint {
     font-size: 16px;
     color: var(--ion-color-medium-tint);
@@ -88,7 +97,6 @@
     opacity: 0.5;
 }
 
-/* ── Slide option ────────────────────────────── */
 .option-delete {
     --ion-color-danger: #ff3b30;
     font-size: 12px;
@@ -100,7 +108,6 @@
     }
 }
 
-/* ── Dark mode tweaks ────────────────────────── */
 @media (prefers-color-scheme: dark) {
     .category-item {
         --background: var(--ion-card-background, #1c1c1e);

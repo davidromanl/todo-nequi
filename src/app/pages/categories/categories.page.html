@@ -18,7 +18,6 @@
     <ion-item-sliding *ngFor="let cat of categories$ | async; trackBy: trackById" #slidingItem>
       <ion-item class="category-item" detail="false" button (click)="editCategory(cat); slidingItem.close()">
 
-        <!-- Indicador de color + icono -->
         <div slot="start" class="color-badge" [style.--cat-color]="cat.color || '#8e8e93'">
           <ion-icon *ngIf="cat.icon; else dotOnly" [name]="cat.icon" class="badge-icon"></ion-icon>
           <ng-template #dotOnly>
@@ -26,16 +25,13 @@
           </ng-template>
         </div>
 
-        <!-- Nombre -->
         <ion-label class="category-label">
           {{ cat.name }}
         </ion-label>
 
-        <!-- Indicador de acción -->
         <ion-icon name="chevron-forward" slot="end" class="chevron-hint" aria-hidden="true"></ion-icon>
       </ion-item>
 
-      <!-- Opciones deslizables -->
       <ion-item-options side="end">
         <ion-item-option class="option-delete" color="danger" (click)="deleteCategory(cat); slidingItem.close()">
           <ion-icon name="trash-outline" slot="top"></ion-icon>
@@ -53,9 +49,7 @@
   </ion-header>
 </ion-content>
 
-<!-- ══════════════════════════════════════════════════
-     MODAL: Crear / Editar Categoría
-══════════════════════════════════════════════════ -->
+<!-- MODAL: Crear / Editar Categoría -->
 <ion-modal #categoryModal [breakpoints]="[0, 0.65, 1]" [initialBreakpoint]="0.65">
   <ng-template>
     <ion-header>
@@ -71,20 +65,16 @@
 
     <ion-content class="ion-padding modal-content">
 
-      <!-- Nombre -->
       <ion-item lines="full" class="form-item">
         <ion-label position="stacked">Nombre <span class="required">*</span></ion-label>
         <ion-input [(ngModel)]="formName" placeholder="Nombre de la categoría" clearInput>
         </ion-input>
       </ion-item>
 
-      <!-- Icono -->
       <ion-item lines="none" class="form-item">
         <ion-label position="stacked" style="margin-bottom: 8px;">Ícono</ion-label>
-        <div class="icon-picker-container" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-          <ion-button *ngFor="let icon of availableIcons" fill="clear"
-            style="width: 40px; height: 40px; margin: 0; --padding-start: 0; --padding-end: 0;"
-            (click)="formIcon = icon">
+        <div class="icon-picker-container">
+          <ion-button class="icon-button" *ngFor="let icon of availableIcons" fill="clear" (click)="formIcon = icon">
             <ion-icon slot="icon-only" [name]="icon" [color]="formIcon === icon ? 'primary' : 'medium'"
               style="font-size: 24px; transition: 0.2s;"
               [style.transform]="formIcon === icon ? 'scale(1.2)' : 'scale(1)'">
@@ -93,19 +83,17 @@
         </div>
       </ion-item>
 
-      <!-- Color -->
       <ion-item lines="none" class="form-item">
         <ion-label position="stacked" style="margin-bottom: 8px;">Color</ion-label>
-        <div class="color-picker-container" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
-          <div *ngFor="let c of colors" class="color-option" [class.selected]="formColor === c"
-            [style.background]="'var(--ion-color-' + c + ')'" (click)="formColor = c"
-            style="width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; transition: 0.2s;">
-            <ion-icon *ngIf="formColor === c" name="checkmark-outline" style="color: white;"></ion-icon>
-          </div>
+        <div class="color-picker-container">
+          <ion-button *ngFor="let c of colors" shape="round" [class.selected]="formColor === c" [color]="c"
+            (click)="formColor = c">
+            <ion-icon name="checkmark-outline" style="font-size: 22px; transition: 0.2s;"
+              [style.transform]="formColor === c ? 'scale(1.3)' : 'scale(1)'"></ion-icon>
+          </ion-button>
         </div>
       </ion-item>
 
-      <!-- Botón guardar -->
       <ion-button expand="block" class="save-btn" [disabled]="!formName.trim()" (click)="saveCategory()">
         <ion-icon name="{{ editingCategory ? 'save-outline' : 'add-circle-outline' }}" slot="start"></ion-icon>
         {{ editingCategory ? 'Guardar cambios' : 'Crear categoría' }}
@@ -115,9 +103,7 @@
   </ng-template>
 </ion-modal>
 
-<!-- ══════════════════════════════════════════════════
-     MODAL: Confirmar eliminación
-══════════════════════════════════════════════════ -->
+<!-- MODAL: Confirmar eliminación -->
 <ion-modal #deleteModal [breakpoints]="[0, 0.35]" [initialBreakpoint]="0.35">
   <ng-template>
     <ion-content class="ion-padding delete-modal">

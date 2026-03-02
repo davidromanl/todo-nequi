@@ -1,6 +1,9 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>📝 Mis Tareas</ion-title>
+    <ion-buttons slot="start">
+      <ion-icon name="list-outline" size="large" slot="start"></ion-icon>
+    </ion-buttons>
+    <ion-title>Mis Tareas</ion-title>
     <ion-buttons slot="end">
       <ion-button routerLink="/categories">
         <ion-icon name="pricetags-outline" slot="icon-only"></ion-icon>
@@ -14,7 +17,6 @@
 
 <ion-content>
 
-  <!-- Stats Card (feature flag) -->
   <ng-container *ngIf="enableTaskStats$ | async">
     <ion-card class="stats-card">
       <ion-card-content>
@@ -36,61 +38,42 @@
     </ion-card>
   </ng-container>
 
-  <!-- Category Filter (feature flag) -->
   <ng-container *ngIf="enableCategories$ | async">
     <div class="filter-scroll">
-      <ion-chip
-        [class.active-chip]="(selectedFilter$ | async) === null"
-        (click)="setFilter(null)">
+      <ion-chip [class.active-chip]="(selectedFilter$ | async) === null" (click)="setFilter(null)">
         Todas
       </ion-chip>
-      <ion-chip
-        *ngFor="let cat of categories$ | async; trackBy: trackByCatId"
-        [class.active-chip]="(selectedFilter$ | async) === cat.id"
-        [style.--background]="cat.color + '33'"
-        [style.--color]="cat.color"
-        (click)="setFilter(cat.id)">
-        <ion-icon name="ellipse" [style.color]="cat.color"></ion-icon>
-        {{ cat.name }}
+      <ion-chip *ngFor="let cat of categories$ | async; trackBy: trackByCatId"
+        [class.active-chip]="(selectedFilter$ | async) === cat.id" [color]="cat.color" (click)="setFilter(cat.id)">
+        <ion-icon [name]="cat.icon"></ion-icon>
+        <ion-label>{{ cat.name }}</ion-label>
       </ion-chip>
     </div>
   </ng-container>
 
-  <!-- Task List -->
   <ion-list>
-    <ion-item-sliding
-      *ngFor="let task of tasks$ | async; trackBy: trackById"
-      #slidingItem>
+    <ion-item-sliding *ngFor="let task of tasks$ | async; trackBy: trackById" #slidingItem>
 
       <ion-item [class.completed-task]="task.completed" detail="false">
-        <ion-checkbox
-          slot="start"
-          [checked]="task.completed"
-          (ionChange)="toggleTask(task)">
+        <ion-checkbox slot="start" [checked]="task.completed" (ionChange)="toggleTask(task)">
         </ion-checkbox>
         <ion-label (click)="openEditModal(task)">
           <h2 [class.strikethrough]="task.completed">{{ task.title }}</h2>
           <p *ngIf="task.description">{{ task.description }}</p>
-          <ion-badge
-            *ngIf="getCategoryForTask(task) as cat"
-            [style.background]="cat.color">
+          <ion-badge *ngIf="getCategoryForTask(task) as cat" [style.background]="cat.color">
             {{ cat.name }}
           </ion-badge>
         </ion-label>
       </ion-item>
 
       <ion-item-options side="start">
-        <ion-item-option
-          color="primary"
-          (click)="openEditModal(task); slidingItem.close()">
+        <ion-item-option color="primary" (click)="openEditModal(task); slidingItem.close()">
           <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
         </ion-item-option>
       </ion-item-options>
 
       <ion-item-options side="end">
-        <ion-item-option
-          color="danger"
-          (click)="openDeleteModal(task); slidingItem.close()">
+        <ion-item-option color="danger" (click)="openDeleteModal(task); slidingItem.close()">
           <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
         </ion-item-option>
       </ion-item-options>
@@ -98,13 +81,11 @@
     </ion-item-sliding>
   </ion-list>
 
-  <!-- Empty state -->
   <div class="empty-state" *ngIf="(tasks$ | async)?.length === 0">
     <ion-icon name="checkmark-circle-outline"></ion-icon>
     <p>No hay tareas. ¡Agrega una!</p>
   </div>
 
-  <!-- FAB -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="openAddModal()" color="primary">
       <ion-icon name="add"></ion-icon>
@@ -114,9 +95,7 @@
 </ion-content>
 
 
-<!-- ══════════════════════════════════════════════════
-     MODAL: Crear / Editar Tarea
-══════════════════════════════════════════════════ -->
+<!-- MODAL: Crear / Editar Tarea -->
 <ion-modal #taskModal [breakpoints]="[0, 0.6, 1]" [initialBreakpoint]="0.6">
   <ng-template>
     <ion-header>
@@ -132,50 +111,30 @@
 
     <ion-content class="ion-padding modal-content">
 
-      <!-- Título -->
       <ion-item lines="full" class="form-item">
         <ion-label position="stacked">Título <span class="required">*</span></ion-label>
-        <ion-input
-          [(ngModel)]="formTitle"
-          placeholder="¿Qué hay que hacer?"
-          clearInput>
+        <ion-input [(ngModel)]="formTitle" placeholder="¿Qué hay que hacer?" clearInput>
         </ion-input>
       </ion-item>
 
-      <!-- Descripción -->
       <ion-item lines="full" class="form-item">
         <ion-label position="stacked">Descripción</ion-label>
-        <ion-textarea
-          [(ngModel)]="formDescription"
-          placeholder="Detalles opcionales..."
-          [rows]="3"
-          autoGrow>
+        <ion-textarea [(ngModel)]="formDescription" placeholder="Detalles opcionales..." [rows]="3" autoGrow>
         </ion-textarea>
       </ion-item>
 
-      <!-- Categoría -->
       <ion-item lines="none" class="form-item" *ngIf="enableCategories$ | async">
         <ion-label position="stacked">Categoría</ion-label>
-        <ion-select
-          [(ngModel)]="formCategoryId"
-          placeholder="Sin categoría"
-          interface="action-sheet"
+        <ion-select [(ngModel)]="formCategoryId" placeholder="Sin categoría" interface="action-sheet"
           cancelText="Cancelar">
           <ion-select-option [value]="null">Sin categoría</ion-select-option>
-          <ion-select-option
-            *ngFor="let cat of categories$ | async; trackBy: trackByCatId"
-            [value]="cat.id">
+          <ion-select-option *ngFor="let cat of categories$ | async; trackBy: trackByCatId" [value]="cat.id">
             {{ cat.name }}
           </ion-select-option>
         </ion-select>
       </ion-item>
 
-      <!-- Botón guardar -->
-      <ion-button
-        expand="block"
-        class="save-btn"
-        [disabled]="!formTitle.trim()"
-        (click)="saveTask()">
+      <ion-button expand="block" class="save-btn" [disabled]="!formTitle.trim()" (click)="saveTask()">
         <ion-icon name="{{ editingTask ? 'save-outline' : 'add-circle-outline' }}" slot="start"></ion-icon>
         {{ editingTask ? 'Guardar cambios' : 'Agregar tarea' }}
       </ion-button>
@@ -185,9 +144,7 @@
 </ion-modal>
 
 
-<!-- ══════════════════════════════════════════════════
-     MODAL: Confirmar eliminación
-══════════════════════════════════════════════════ -->
+<!-- MODAL: Confirmar eliminación -->
 <ion-modal #deleteModal [breakpoints]="[0, 0.35]" [initialBreakpoint]="0.35">
   <ng-template>
     <ion-content class="ion-padding delete-modal">
@@ -211,4 +168,3 @@
     </ion-content>
   </ng-template>
 </ion-modal>
-

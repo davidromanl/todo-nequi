@@ -2,17 +2,12 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { RouteReuseStrategy, provideRouter, withPreloading, PreloadAllModules } from '@angular/router';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { pricetagsOutline, addOutline, pencilOutline, trashOutline, add, pricetagOutline, starOutline, homeOutline, briefcaseOutline, cartOutline, fastFoodOutline, heartOutline, fitnessOutline, bookOutline, carOutline, airplaneOutline, walletOutline, giftOutline, musicalNotesOutline, constructOutline } from 'ionicons/icons';
-
+import { pricetagsOutline, addOutline, pencilOutline, trashOutline, add, pricetagOutline, starOutline, homeOutline, briefcaseOutline, cartOutline, fastFoodOutline, heartOutline, fitnessOutline, bookOutline, carOutline, airplaneOutline, walletOutline, giftOutline, musicalNotesOutline, constructOutline, listOutline, checkmarkOutline } from 'ionicons/icons';
+import { importProvidersFrom } from '@angular/core';
+import { IonicStorageModule } from '@ionic/storage-angular';
+import { Drivers } from '@ionic/storage';
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
-
-/* Icons = [
-    'pricetag-outline', 'star-outline', 'home-outline', 'briefcase-outline',
-    'cart-outline', 'fast-food-outline', 'heart-outline', 'fitness-outline',
-    'book-outline', 'car-outline', 'airplane-outline', 'wallet-outline',
-    'gift-outline', 'musical-notes-outline', 'construct-outline'
- */
 
 addIcons({
   'pricetags-outline': pricetagsOutline,
@@ -23,6 +18,7 @@ addIcons({
   "pricetag-outline": pricetagOutline,
   "star-outline": starOutline,
   "home-outline": homeOutline,
+  "list-outline": listOutline,
   "briefcase-outline": briefcaseOutline,
   "cart-outline": cartOutline,
   "fast-food-outline": fastFoodOutline,
@@ -35,6 +31,7 @@ addIcons({
   "gift-outline": giftOutline,
   "musical-notes-outline": musicalNotesOutline,
   "construct-outline": constructOutline,
+  "checkmark-outline": checkmarkOutline,
 });
 
 bootstrapApplication(AppComponent, {
@@ -42,5 +39,11 @@ bootstrapApplication(AppComponent, {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
+    importProvidersFrom(
+      IonicStorageModule.forRoot({
+        name: '__appdb',
+        driverOrder: [Drivers.IndexedDB, Drivers.LocalStorage],
+      })
+    ),
   ],
 });
